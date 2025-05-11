@@ -1,0 +1,241 @@
+cnae_section,setor_descricao,porte,idade_min,idade_max,risco_anual
+A,"Agricultura, pecuária, produção florestal, pesca e aquicultura",ME,0,5,0.1653
+A,"Agricultura, pecuária, produção florestal, pesca e aquicultura",ME,5,10,0.1037
+A,"Agricultura, pecuária, produção florestal, pesca e aquicultura",ME,10,15,0.1037
+A,"Agricultura, pecuária, produção florestal, pesca e aquicultura",ME,15,999,0.1037
+A,"Agricultura, pecuária, produção florestal, pesca e aquicultura",EPP,0,5,0.0994
+A,"Agricultura, pecuária, produção florestal, pesca e aquicultura",EPP,5,10,0.0624
+A,"Agricultura, pecuária, produção florestal, pesca e aquicultura",EPP,10,15,0.0624
+A,"Agricultura, pecuária, produção florestal, pesca e aquicultura",EPP,15,999,0.0624
+A,"Agricultura, pecuária, produção florestal, pesca e aquicultura",DEMAIS,0,5,0.0842
+A,"Agricultura, pecuária, produção florestal, pesca e aquicultura",DEMAIS,5,10,0.0529
+A,"Agricultura, pecuária, produção florestal, pesca e aquicultura",DEMAIS,10,15,0.0529
+A,"Agricultura, pecuária, produção florestal, pesca e aquicultura",DEMAIS,15,999,0.0529
+B,Indústrias extrativas,ME,0,5,0.1724
+B,Indústrias extrativas,ME,5,10,0.1037
+B,Indústrias extrativas,ME,10,15,0.1037
+B,Indústrias extrativas,ME,15,999,0.1037
+B,Indústrias extrativas,EPP,0,5,0.1037
+B,Indústrias extrativas,EPP,5,10,0.0624
+B,Indústrias extrativas,EPP,10,15,0.0624
+B,Indústrias extrativas,EPP,15,999,0.0624
+B,Indústrias extrativas,DEMAIS,0,5,0.0879
+B,Indústrias extrativas,DEMAIS,5,10,0.0529
+B,Indústrias extrativas,DEMAIS,10,15,0.0529
+B,Indústrias extrativas,DEMAIS,15,999,0.0529
+C,Indústrias de transformação,ME,0,5,0.1636
+C,Indústrias de transformação,ME,5,10,0.1037
+C,Indústrias de transformação,ME,10,15,0.1037
+C,Indústrias de transformação,ME,15,999,0.1037
+C,Indústrias de transformação,EPP,0,5,0.0984
+C,Indústrias de transformação,EPP,5,10,0.0624
+C,Indústrias de transformação,EPP,10,15,0.0624
+C,Indústrias de transformação,EPP,15,999,0.0624
+C,Indústrias de transformação,DEMAIS,0,5,0.0834
+C,Indústrias de transformação,DEMAIS,5,10,0.0529
+C,Indústrias de transformação,DEMAIS,10,15,0.0529
+C,Indústrias de transformação,DEMAIS,15,999,0.0529
+D,Eletricidade e gás,ME,0,5,0.1068
+D,Eletricidade e gás,ME,5,10,0.1037
+D,Eletricidade e gás,ME,10,15,0.1037
+D,Eletricidade e gás,ME,15,999,0.1037
+D,Eletricidade e gás,EPP,0,5,0.0642
+D,Eletricidade e gás,EPP,5,10,0.0624
+D,Eletricidade e gás,EPP,10,15,0.0624
+D,Eletricidade e gás,EPP,15,999,0.0624
+D,Eletricidade e gás,DEMAIS,0,5,0.0545
+D,Eletricidade e gás,DEMAIS,5,10,0.0529
+D,Eletricidade e gás,DEMAIS,10,15,0.0529
+D,Eletricidade e gás,DEMAIS,15,999,0.0529
+E,"Água, esgoto, atividades de gestão de resíduos e descontaminação",ME,0,5,0.164
+E,"Água, esgoto, atividades de gestão de resíduos e descontaminação",ME,5,10,0.1037
+E,"Água, esgoto, atividades de gestão de resíduos e descontaminação",ME,10,15,0.1037
+E,"Água, esgoto, atividades de gestão de resíduos e descontaminação",ME,15,999,0.1037
+E,"Água, esgoto, atividades de gestão de resíduos e descontaminação",EPP,0,5,0.0986
+E,"Água, esgoto, atividades de gestão de resíduos e descontaminação",EPP,5,10,0.0624
+E,"Água, esgoto, atividades de gestão de resíduos e descontaminação",EPP,10,15,0.0624
+E,"Água, esgoto, atividades de gestão de resíduos e descontaminação",EPP,15,999,0.0624
+E,"Água, esgoto, atividades de gestão de resíduos e descontaminação",DEMAIS,0,5,0.0836
+E,"Água, esgoto, atividades de gestão de resíduos e descontaminação",DEMAIS,5,10,0.0529
+E,"Água, esgoto, atividades de gestão de resíduos e descontaminação",DEMAIS,10,15,0.0529
+E,"Água, esgoto, atividades de gestão de resíduos e descontaminação",DEMAIS,15,999,0.0529
+F,Construção,ME,0,5,0.2432
+F,Construção,ME,5,10,0.1037
+F,Construção,ME,10,15,0.1037
+F,Construção,ME,15,999,0.1037
+F,Construção,EPP,0,5,0.1463
+F,Construção,EPP,5,10,0.0624
+F,Construção,EPP,10,15,0.0624
+F,Construção,EPP,15,999,0.0624
+F,Construção,DEMAIS,0,5,0.124
+F,Construção,DEMAIS,5,10,0.0529
+F,Construção,DEMAIS,10,15,0.0529
+F,Construção,DEMAIS,15,999,0.0529
+G,Comércio; reparação de veículos automotores e motocicletas,ME,0,5,0.1866
+G,Comércio; reparação de veículos automotores e motocicletas,ME,5,10,0.1037
+G,Comércio; reparação de veículos automotores e motocicletas,ME,10,15,0.1037
+G,Comércio; reparação de veículos automotores e motocicletas,ME,15,999,0.1037
+G,Comércio; reparação de veículos automotores e motocicletas,EPP,0,5,0.1122
+G,Comércio; reparação de veículos automotores e motocicletas,EPP,5,10,0.0624
+G,Comércio; reparação de veículos automotores e motocicletas,EPP,10,15,0.0624
+G,Comércio; reparação de veículos automotores e motocicletas,EPP,15,999,0.0624
+G,Comércio; reparação de veículos automotores e motocicletas,DEMAIS,0,5,0.0951
+G,Comércio; reparação de veículos automotores e motocicletas,DEMAIS,5,10,0.0529
+G,Comércio; reparação de veículos automotores e motocicletas,DEMAIS,10,15,0.0529
+G,Comércio; reparação de veículos automotores e motocicletas,DEMAIS,15,999,0.0529
+H,"Transporte, armazenagem e correio",ME,0,5,0.1994
+H,"Transporte, armazenagem e correio",ME,5,10,0.1037
+H,"Transporte, armazenagem e correio",ME,10,15,0.1037
+H,"Transporte, armazenagem e correio",ME,15,999,0.1037
+H,"Transporte, armazenagem e correio",EPP,0,5,0.1199
+H,"Transporte, armazenagem e correio",EPP,5,10,0.0624
+H,"Transporte, armazenagem e correio",EPP,10,15,0.0624
+H,"Transporte, armazenagem e correio",EPP,15,999,0.0624
+H,"Transporte, armazenagem e correio",DEMAIS,0,5,0.1016
+H,"Transporte, armazenagem e correio",DEMAIS,5,10,0.0529
+H,"Transporte, armazenagem e correio",DEMAIS,10,15,0.0529
+H,"Transporte, armazenagem e correio",DEMAIS,15,999,0.0529
+I,Alojamento e alimentação,ME,0,5,0.2182
+I,Alojamento e alimentação,ME,5,10,0.1037
+I,Alojamento e alimentação,ME,10,15,0.1037
+I,Alojamento e alimentação,ME,15,999,0.1037
+I,Alojamento e alimentação,EPP,0,5,0.1312
+I,Alojamento e alimentação,EPP,5,10,0.0624
+I,Alojamento e alimentação,EPP,10,15,0.0624
+I,Alojamento e alimentação,EPP,15,999,0.0624
+I,Alojamento e alimentação,DEMAIS,0,5,0.1112
+I,Alojamento e alimentação,DEMAIS,5,10,0.0529
+I,Alojamento e alimentação,DEMAIS,10,15,0.0529
+I,Alojamento e alimentação,DEMAIS,15,999,0.0529
+J,Informação e comunicação,ME,0,5,0.1575
+J,Informação e comunicação,ME,5,10,0.1037
+J,Informação e comunicação,ME,10,15,0.1037
+J,Informação e comunicação,ME,15,999,0.1037
+J,Informação e comunicação,EPP,0,5,0.0947
+J,Informação e comunicação,EPP,5,10,0.0624
+J,Informação e comunicação,EPP,10,15,0.0624
+J,Informação e comunicação,EPP,15,999,0.0624
+J,Informação e comunicação,DEMAIS,0,5,0.0803
+J,Informação e comunicação,DEMAIS,5,10,0.0529
+J,Informação e comunicação,DEMAIS,10,15,0.0529
+J,Informação e comunicação,DEMAIS,15,999,0.0529
+K,"Atividades financeiras, de seguros e serviços relacionados",ME,0,5,0.1636
+K,"Atividades financeiras, de seguros e serviços relacionados",ME,5,10,0.1037
+K,"Atividades financeiras, de seguros e serviços relacionados",ME,10,15,0.1037
+K,"Atividades financeiras, de seguros e serviços relacionados",ME,15,999,0.1037
+K,"Atividades financeiras, de seguros e serviços relacionados",EPP,0,5,0.0984
+K,"Atividades financeiras, de seguros e serviços relacionados",EPP,5,10,0.0624
+K,"Atividades financeiras, de seguros e serviços relacionados",EPP,10,15,0.0624
+K,"Atividades financeiras, de seguros e serviços relacionados",EPP,15,999,0.0624
+K,"Atividades financeiras, de seguros e serviços relacionados",DEMAIS,0,5,0.0834
+K,"Atividades financeiras, de seguros e serviços relacionados",DEMAIS,5,10,0.0529
+K,"Atividades financeiras, de seguros e serviços relacionados",DEMAIS,10,15,0.0529
+K,"Atividades financeiras, de seguros e serviços relacionados",DEMAIS,15,999,0.0529
+L,Atividades imobiliárias,ME,0,5,0.1587
+L,Atividades imobiliárias,ME,5,10,0.1037
+L,Atividades imobiliárias,ME,10,15,0.1037
+L,Atividades imobiliárias,ME,15,999,0.1037
+L,Atividades imobiliárias,EPP,0,5,0.0955
+L,Atividades imobiliárias,EPP,5,10,0.0624
+L,Atividades imobiliárias,EPP,10,15,0.0624
+L,Atividades imobiliárias,EPP,15,999,0.0624
+L,Atividades imobiliárias,DEMAIS,0,5,0.0809
+L,Atividades imobiliárias,DEMAIS,5,10,0.0529
+L,Atividades imobiliárias,DEMAIS,10,15,0.0529
+L,Atividades imobiliárias,DEMAIS,15,999,0.0529
+M,"Atividades profissionais, científicas e técnicas",ME,0,5,0.1686
+M,"Atividades profissionais, científicas e técnicas",ME,5,10,0.1037
+M,"Atividades profissionais, científicas e técnicas",ME,10,15,0.1037
+M,"Atividades profissionais, científicas e técnicas",ME,15,999,0.1037
+M,"Atividades profissionais, científicas e técnicas",EPP,0,5,0.1014
+M,"Atividades profissionais, científicas e técnicas",EPP,5,10,0.0624
+M,"Atividades profissionais, científicas e técnicas",EPP,10,15,0.0624
+M,"Atividades profissionais, científicas e técnicas",EPP,15,999,0.0624
+M,"Atividades profissionais, científicas e técnicas",DEMAIS,0,5,0.0859
+M,"Atividades profissionais, científicas e técnicas",DEMAIS,5,10,0.0529
+M,"Atividades profissionais, científicas e técnicas",DEMAIS,10,15,0.0529
+M,"Atividades profissionais, científicas e técnicas",DEMAIS,15,999,0.0529
+N,Atividades administrativas e serviços complementares,ME,0,5,0.1772
+N,Atividades administrativas e serviços complementares,ME,5,10,0.1037
+N,Atividades administrativas e serviços complementares,ME,10,15,0.1037
+N,Atividades administrativas e serviços complementares,ME,15,999,0.1037
+N,Atividades administrativas e serviços complementares,EPP,0,5,0.1066
+N,Atividades administrativas e serviços complementares,EPP,5,10,0.0624
+N,Atividades administrativas e serviços complementares,EPP,10,15,0.0624
+N,Atividades administrativas e serviços complementares,EPP,15,999,0.0624
+N,Atividades administrativas e serviços complementares,DEMAIS,0,5,0.0903
+N,Atividades administrativas e serviços complementares,DEMAIS,5,10,0.0529
+N,Atividades administrativas e serviços complementares,DEMAIS,10,15,0.0529
+N,Atividades administrativas e serviços complementares,DEMAIS,15,999,0.0529
+O,"Administração pública, defesa e seguridade social",ME,0,5,0.1612
+O,"Administração pública, defesa e seguridade social",ME,5,10,0.1037
+O,"Administração pública, defesa e seguridade social",ME,10,15,0.1037
+O,"Administração pública, defesa e seguridade social",ME,15,999,0.1037
+O,"Administração pública, defesa e seguridade social",EPP,0,5,0.0969
+O,"Administração pública, defesa e seguridade social",EPP,5,10,0.0624
+O,"Administração pública, defesa e seguridade social",EPP,10,15,0.0624
+O,"Administração pública, defesa e seguridade social",EPP,15,999,0.0624
+O,"Administração pública, defesa e seguridade social",DEMAIS,0,5,0.0821
+O,"Administração pública, defesa e seguridade social",DEMAIS,5,10,0.0529
+O,"Administração pública, defesa e seguridade social",DEMAIS,10,15,0.0529
+O,"Administração pública, defesa e seguridade social",DEMAIS,15,999,0.0529
+P,Educação,ME,0,5,0.1579
+P,Educação,ME,5,10,0.1037
+P,Educação,ME,10,15,0.1037
+P,Educação,ME,15,999,0.1037
+P,Educação,EPP,0,5,0.095
+P,Educação,EPP,5,10,0.0624
+P,Educação,EPP,10,15,0.0624
+P,Educação,EPP,15,999,0.0624
+P,Educação,DEMAIS,0,5,0.0805
+P,Educação,DEMAIS,5,10,0.0529
+P,Educação,DEMAIS,10,15,0.0529
+P,Educação,DEMAIS,15,999,0.0529
+Q,Saúde humana e serviços sociais,ME,0,5,0.1176
+Q,Saúde humana e serviços sociais,ME,5,10,0.1037
+Q,Saúde humana e serviços sociais,ME,10,15,0.1037
+Q,Saúde humana e serviços sociais,ME,15,999,0.1037
+Q,Saúde humana e serviços sociais,EPP,0,5,0.0707
+Q,Saúde humana e serviços sociais,EPP,5,10,0.0624
+Q,Saúde humana e serviços sociais,EPP,10,15,0.0624
+Q,Saúde humana e serviços sociais,EPP,15,999,0.0624
+Q,Saúde humana e serviços sociais,DEMAIS,0,5,0.06
+Q,Saúde humana e serviços sociais,DEMAIS,5,10,0.0529
+Q,Saúde humana e serviços sociais,DEMAIS,10,15,0.0529
+Q,Saúde humana e serviços sociais,DEMAIS,15,999,0.0529
+R,"Artes, cultura, esporte e recreação",ME,0,5,0.1979
+R,"Artes, cultura, esporte e recreação",ME,5,10,0.1037
+R,"Artes, cultura, esporte e recreação",ME,10,15,0.1037
+R,"Artes, cultura, esporte e recreação",ME,15,999,0.1037
+R,"Artes, cultura, esporte e recreação",EPP,0,5,0.119
+R,"Artes, cultura, esporte e recreação",EPP,5,10,0.0624
+R,"Artes, cultura, esporte e recreação",EPP,10,15,0.0624
+R,"Artes, cultura, esporte e recreação",EPP,15,999,0.0624
+R,"Artes, cultura, esporte e recreação",DEMAIS,0,5,0.1009
+R,"Artes, cultura, esporte e recreação",DEMAIS,5,10,0.0529
+R,"Artes, cultura, esporte e recreação",DEMAIS,10,15,0.0529
+R,"Artes, cultura, esporte e recreação",DEMAIS,15,999,0.0529
+S,Outras atividades de serviços,ME,0,5,0.2172
+S,Outras atividades de serviços,ME,5,10,0.1037
+S,Outras atividades de serviços,ME,10,15,0.1037
+S,Outras atividades de serviços,ME,15,999,0.1037
+S,Outras atividades de serviços,EPP,0,5,0.1306
+S,Outras atividades de serviços,EPP,5,10,0.0624
+S,Outras atividades de serviços,EPP,10,15,0.0624
+S,Outras atividades de serviços,EPP,15,999,0.0624
+S,Outras atividades de serviços,DEMAIS,0,5,0.1107
+S,Outras atividades de serviços,DEMAIS,5,10,0.0529
+S,Outras atividades de serviços,DEMAIS,10,15,0.0529
+S,Outras atividades de serviços,DEMAIS,15,999,0.0529
+U,Organismos internacionais e outras instituições extraterritoriais,ME,0,5,
+U,Organismos internacionais e outras instituições extraterritoriais,ME,5,10,
+U,Organismos internacionais e outras instituições extraterritoriais,ME,10,15,
+U,Organismos internacionais e outras instituições extraterritoriais,ME,15,999,
+U,Organismos internacionais e outras instituições extraterritoriais,EPP,0,5,
+U,Organismos internacionais e outras instituições extraterritoriais,EPP,5,10,
+U,Organismos internacionais e outras instituições extraterritoriais,EPP,10,15,
+U,Organismos internacionais e outras instituições extraterritoriais,EPP,15,999,
+U,Organismos internacionais e outras instituições extraterritoriais,DEMAIS,0,5,
+U,Organismos internacionais e outras instituições extraterritoriais,DEMAIS,5,10,
+U,Organismos internacionais e outras instituições extraterritoriais,DEMAIS,10,15,
+U,Organismos internacionais e outras instituições extraterritoriais,DEMAIS,15,999,

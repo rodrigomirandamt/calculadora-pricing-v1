@@ -1,0 +1,42 @@
+================================================================================
+RELATÓRIO DE PROCESSAMENTO - CALCULADORA PRICING v1.0.0
+================================================================================
+Data e hora: 2025-05-11 16:51:14
+Arquivo processado: resultados\resultado_pricingv1_2025-05-11.csv
+
+--------------------------------------------------------------------------------
+PARÂMETROS DE EXECUÇÃO
+--------------------------------------------------------------------------------
+Número de linhas processadas: 1000
+
+--------------------------------------------------------------------------------
+ARQUIVOS UTILIZADOS
+--------------------------------------------------------------------------------
+BASE: dados/base-producao-neoway_20250503.csv
+ROTATIVIDADE: dados/prob-rotatividade.csv
+FECHAMENTO: dados/risco-fechamento-porte.csv
+
+--------------------------------------------------------------------------------
+HIPÓTESES UTILIZADAS
+--------------------------------------------------------------------------------
+CDI_ANUAL: 0.14
+FUNDING: 0.17500000000000002
+CUSTO_OPERACIONAL: 0.02
+MARGEM: 0.04
+R_BASE: 0.23500000000000001
+P_INFORMALIDADE: 0.1
+LGD: 0.8
+
+--------------------------------------------------------------------------------
+RESULTADOS DA VALIDAÇÃO
+--------------------------------------------------------------------------------
+flag_sum_probs      : 0 linha(s) com problema
+flag_epv_surv       : 0 linha(s) com problema
+flag_epv_delay      : 0 linha(s) com problema
+flag_epv_def        : 0 linha(s) com problema
+flag_epv_total      : 0 linha(s) com problema
+flag_pmt            : 0 linha(s) com problema
+flag_duration       : 0 linha(s) com problema
+flag_intervals      : 0 linha(s) com problema
+
+Nenhuma inconsistência encontrada nos dados!

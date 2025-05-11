@@ -1,0 +1,104 @@
+#!/usr/bin/env python
+# data_utils.py
+# Funções para carregamento e processamento de dados
+
+import pandas as pd
+import numpy as np
+from src.config import *
+
+def load_data(base_path=CSV_BASE, rot_path=CSV_ROTATIVIDADE, risk_path=CSV_FECHAMENTO, 
+              num_rows=None, sample_size=None):
+    """
+    Carrega e prepara os arquivos de dados de entrada
+    
+    Args:
+        base_path: Caminho para o arquivo da base de contratos
+        rot_path: Caminho para o arquivo de rotatividade
+        risk_path: Caminho para o arquivo de riscos de fechamento
+        num_rows: Limite de linhas a carregar (opcional)
+        sample_size: Tamanho da amostra aleatória (opcional)
+        
+    Returns:
+        Tuple de DataFrames (base, rot_df, riscos_df, cnae_col)
+    """
+    rot_df = pd.read_csv(rot_path, encoding='utf-8-sig')
+    riscos_df = pd.read_csv(risk_path, encoding='latin1')
+    base = pd.read_csv(base_path, encoding='latin1', dtype=str)
+    
+    # Processa os dataframes
+    for col in ['grossvalue', 'numberofinstallments', 'tempo_empresa_anos']:
+        base[col] = base[col].astype(float)
+    
+    cnae_col = [c for c in rot_df.columns if 'cnae_section' in c][0]
+    rot_df[cnae_col] = rot_df[cnae_col].astype(str)
+    rot_df['rotatividade_mensal'] = rot_df['rotatividade_mensal'].astype(float)
+    rot_df['tempo_desemprego_esperado_meses'] = rot_df['tempo_desemprego_esperado_meses'].astype(int)
+    
+    # Aplica filtros, se especificados
+    if num_rows:
+        base = base.head(num_rows)
+    if sample_size:
+        base = base.sample(n=sample_size, random_state=42)
+    
+    return base, rot_df, riscos_df, cnae_col
+
+def get_risco_fechamento_annual(row, risco_df):
+    """
+    Busca a probabilidade anual de fechamento pelo CNAE, porte e idade da empresa.
+    
+    Args:
+        row: Linha do DataFrame de contratos
+        risco_df: DataFrame com os riscos de fechamento
+        
+    Returns:
+        float: Probabilidade anual de fechamento
+    """
+    sec = row.get('cnae_section') or 'A'
+    emp = float(row['tempo_empresa_anos'])
+    porte = row['porte']
+    sel = risco_df[
+        (risco_df['cnae_section'] == sec) &
+        (risco_df['porte'] == porte) &
+        (risco_df['idade_min'] <= emp) &
+        (risco_df['idade_max'] >= emp)
+    ]
+    return float(sel['risco_anual'].iloc[0]) if not sel.empty else 0.1002
+
+def process_row(row, rot_df, cnae_col, riscos_df):
+    """
+    Processa uma linha de contrato e calcula o pricing
+    
+    Args:
+        row: Linha do DataFrame de contratos
+        rot_df: DataFrame de rotatividade
+        cnae_col: Nome da coluna de CNAE
+        riscos_df: DataFrame de riscos
+        
+    Returns:
+        dict: Dicionário com os resultados do cálculo de pricing
+    """
+    from src.pricing_model import simulate_pricing
+    
+    sec = row.get('cnae_section') or 'A'
+    if sec in rot_df[cnae_col].values:
+        rot = rot_df.loc[rot_df[cnae_col] == sec].iloc[0]
+    else:
+        rot = rot_df.loc[rot_df[cnae_col] == 'A'].iloc[0]
+
+    params = {
+        'PV': row['grossvalue'],
+        'n': row['numberofinstallments'],
+        'p_close_annual': get_risco_fechamento_annual(row, riscos_df),
+        'p_rot_m': float(rot['rotatividade_mensal']),
+        'delay': int(rot['tempo_desemprego_esperado_meses'])
+    }
+    sim = simulate_pricing(params)
+    return {
+        'personid': row['personid'],
+        'contractid': row['contractid'],
+        'cnae_section': sec,
+        'porte': row.get('porte'),
+        'delay': params['delay'],
+        'p_rot_m': params['p_rot_m'],
+        **sim
+    } 

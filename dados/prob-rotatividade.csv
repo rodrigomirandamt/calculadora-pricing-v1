@@ -1,0 +1,21 @@
+cnae_section,descrição,rotatividade_mensal,tempo_desemprego_esperado_meses
+A,Agricultura pecuária produção florestal pesca e aquicultura,0.0525,3
+B,Indústrias Extrativas,0.0179,14
+C,Indústrias de Transformação,0.0324,9
+D,Eletricidade e Gás,0.0116,14
+E,Água Esgoto Atividades de Gestão de Resíduos e Descontaminação,0.0241,9
+F,Construção,0.0642,3
+G,Comércio; reparação de veículos automotores e motocicletas,0.0414,3
+H,Transporte armazenagem e correio,0.0349,9
+I,Alojamento e alimentação,0.0528,3
+J,Informação e Comunicação,0.03,9
+K,Atividades Financeiras de Seguros e Serviços Relacionados,0.0164,14
+L,Atividades Imobiliárias,0.0334,9
+M,Atividades Profissionais Científicas e Técnicas,0.0403,3
+N,Atividades Administrativas e Serviços Complementares,0.0522,3
+O,Administração Pública Defesa e Seguridade Social,0.0077,14
+P,Educação,0.0246,9
+Q,Saúde Humana e Serviços Sociais,0.0268,9
+R,Artes Cultura Esporte e Recreação,0.0372,9
+S,Outras Atividades de Serviços,0.03,9
+U,Organismos Internacionais e Outras Instituições Extraterritoriais,0.0166,14

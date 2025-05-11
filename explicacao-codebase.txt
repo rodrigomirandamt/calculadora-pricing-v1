@@ -1,0 +1,166 @@
+📌 Pricing de Empréstimos Consignados – Guia Detalhado
+
+1. Objetivo Geral
+-----------------
+Determinar a parcela mensal ajustada ao risco (PMT_risco) de empréstimos consignados privados,
+levando em consideração riscos de fechamento da empresa empregadora e rotatividade (demissão do tomador).
+
+Dado:
+- PV: valor presente do empréstimo
+- n: número total de parcelas mensais
+- p_close_ann: probabilidade anual de fechamento
+- p_rot_m: probabilidade mensal de rotatividade do setor
+- d: tempo de atraso esperado após rotatividade (em meses)
+
+O código gera métricas adicionais para análise detalhada de risco e precificação.
+
+2. Estrutura do Projeto
+-----------------------
+A calculadora está organizada em uma estrutura modular:
+
+    calculadora-pricing-v1/
+    ├── main.py                # Script principal (ponto de entrada)
+    ├── resultados/            # Diretório onde os resultados são salvos
+    │   ├── resultado_*.csv    # Arquivos CSV com resultados dos cálculos
+    │   └── resultado_*.txt    # Relatórios de processamento
+    └── src/                   # Pacote com os módulos da aplicação
+        ├── __init__.py        # Torna src um pacote importável
+        ├── config.py          # Configurações e constantes
+        ├── data_utils.py      # Funções para carregamento e processamento de dados
+        ├── pricing_model.py   # Lógica do modelo matemático
+        └── validacao.py       # Funções para validação dos resultados
+
+Funções dos módulos:
+
+* **config.py**: Mantém parâmetros financeiros (CDI, funding, custos), parâmetros de risco (LGD, informalidade), e caminhos para arquivos.
+* **data_utils.py**: Carregamento e processamento de dados de entrada, extração de taxas de rotatividade e risco.
+* **pricing_model.py**: Implementação da lógica matemática para cálculo do PMT ajustado ao risco.
+* **validacao.py**: Validação de resultados e checagem de inconsistências.
+
+3. Estrutura Lógica do Algoritmo
+--------------------------------
+Etapas principais do fluxo:
+
+1. Carregamento dos dados de entrada
+   - Dados históricos de risco por CNAE e porte da empresa.
+   - Base de contratos para precificação.
+
+2. Conversão de probabilidades anuais em hazards mensais:
+   h_close = 1 - (1 - p_close_ann)^(1/12)
+   h_turnover = h_close + (1 - h_close) * (p_rot_m * 0.66)
+   h_default = h_turnover * 10%
+   h_delay = h_turnover * 90%
+
+3. Curva de sobrevivência e densidades
+   S[0] = 1
+   S[u] = S[u-1] * (1 - h_default - h_delay)
+   f_default[u] = S[u-1] * h_default
+   f_delay[u] = S[u-1] * h_delay
+
+4. PMT livre de risco (PMT_base):
+   PMT_base = PV * r_tar_m / (1 - (1 + r_tar_m)^(-n))
+   r_tar_m = (1 + R_base)^(1/12) - 1
+
+5. Cálculo de PMT ajustado ao risco (PMT_risco)
+-----------------------------------------------
+
+Queremos encontrar o valor da parcela mensal PMT_risco tal que o valor presente esperado dos fluxos futuros (EPV_total) iguale o valor do empréstimo:
+
+    EPV_total = EPV_surv + EPV_delay + EPV_default = PV
+
+Onde cada componente é calculado da seguinte forma:
+
+5.1. EPV da sobrevivência até o fim (sem evento):
+
+    EPV_surv = S[n] * sum_{t=1}^{n} [ PMT / (1 + r)^t ]
+
+    Onde:
+      - S[n] é a probabilidade de chegar até a última parcela sem nenhum evento
+      - r = r_tar_m é a taxa-meta mensal
+
+5.2. EPV em caso de atraso (evento ocorre no mês u <= n):
+
+    EPV_delay = sum_{u=1}^{n} f_delay[u] * [
+                   sum_{t=1}^{u-1} [ PMT / (1 + r)^t ] +
+                   sum_{t=u}^{n}   [ PMT / (1 + r)^{t + d} ]
+                ]
+
+    Onde:
+      - d é o número de meses de atraso após o evento de desligamento
+
+5.3. EPV em caso de default (evento ocorre no mês u <= n):
+
+    EPV_default = sum_{u=1}^{n} f_default[u] * [
+                      sum_{t=1}^{u-1} [ PMT / (1 + r)^t ] +
+                      (1 - LGD) * B[u-1] / (1 + r)^u
+                  ]
+
+    Onde:
+      - LGD é a perda dada o default (ex: 80%)
+      - B[u-1] é o saldo devedor imediatamente antes do default
+
+5.4. Resolução numérica:
+
+A equação:
+
+    EPV_surv + EPV_delay + EPV_default = PV
+
+é resolvida numericamente com fsolve, ajustando PMT até que a igualdade se satisfaça.
+
+6. Spreads e TIR do cliente:
+   spread_valor = PMT_risco - PMT_base
+   r_min_m = root of sum(PMT_risco / (1 + r)^t) = PV
+   spread = r_min_m - r_tar_m
+   spread_anual = R_min_anual - R_base
+
+7. KPIs adicionais:
+   Expected_payments = sum S[0..n-1]
+   Mean_time_to_event = sum u * (f_def[u] + f_del[u])
+   E_Duration = sum u*f_def[u] + sum (n+d)*f_del[u] + n*S[n]
+   LGD_ponderado = sum f_def[u] * LGD * saldo[u-1] / PV
+
+4. Execução e Uso
+-----------------
+Para executar a calculadora:
+
+```
+python main.py [opções]
+```
+
+Opções disponíveis:
+- `-n, --num`: Número de linhas a processar
+- `--sample`: Tamanho da amostra aleatória a extrair
+- `-o, --output`: Caminho para o arquivo de saída
+- `--base-path`: Caminho do arquivo da base de contratos
+- `--rot-path`: Caminho do arquivo de rotatividade
+- `--risk-path`: Caminho do arquivo de riscos de fechamento
+
+Os resultados incluem:
+1. Arquivo CSV na pasta `resultados/` com data no nome
+2. Relatório TXT com informações sobre:
+   - Versão da calculadora
+   - Arquivos utilizados
+   - Hipóteses de cálculo
+   - Resultados da validação
+
+5. Colunas Exportadas no CSV
+----------------------------
+• personid, contractid, cnae_section, porte
+• PV, n
+• CDI_anual, Funding, Custo_Operacional, Margem, R_base_anual
+• h_close, h_turnover, h_default, h_delay
+• S_n, P_default_total, P_delay_total
+• EPV_surv, EPV_delay, EPV_default
+• Expected_payments, Mean_time_to_event, E_Duration, LGD_ponderado
+• PMT_base, PMT_risco, spread_valor
+• r_tar_m, r_min_m, spread, R_min_anual, spread_anual
+• calc_time_s
+
+6. Finalidade prática
+---------------------
+• Avaliar se o preço do crédito cobre o risco efetivamente incorrido.
+• Calibrar políticas internas de precificação e riscos.
+• Permitir análises sensíveis ao risco por setor, porte e idade da empresa.
+• Dimensionar estratégias comerciais e de cobrança com base em cenários esperados.
+
+📖 Provérbios 21:5 (NVI) — "Os planos bem elaborados levam à fartura."
