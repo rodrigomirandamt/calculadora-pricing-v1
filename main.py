@@ -19,13 +19,19 @@ import os
 import sys
 import datetime
 import inspect
+import concurrent.futures
+import multiprocessing
 from pathlib import Path
+from itertools import islice
+from functools import partial
 from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn, TimeElapsedColumn, TimeRemainingColumn
 
 # Imports dos módulos da aplicação
 from src.config import *
 from src.data_utils import load_data, process_row
 from src.validacao import validate_results
+# Importar simulate_pricing aqui para evitar problemas de pickling com ProcessPoolExecutor
+from src.pricing_model import simulate_pricing
 
 def generate_report(output_csv_path, args, base_path, rot_path, risk_path):
     """
@@ -122,6 +128,26 @@ def generate_report(output_csv_path, args, base_path, rot_path, risk_path):
     
     return report_filename
 
+def process_batch(batch, rot_df, cnae_col, riscos_df):
+    """
+    Processa um lote de registros em paralelo
+    
+    Args:
+        batch: Lista de registros (dicionários) a serem processados
+        rot_df: DataFrame de rotatividade
+        cnae_col: Nome da coluna de CNAE
+        riscos_df: DataFrame de riscos de fechamento
+        
+    Returns:
+        list: Lista de resultados processados
+    """
+    return [process_row(row, rot_df, cnae_col, riscos_df) for row in batch]
+
+def chunk_list(lst, n):
+    """Divide uma lista em pedaços de tamanho n"""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+
 def main():
     # Parse command line arguments
     parser = argparse.ArgumentParser()
@@ -131,6 +157,8 @@ def main():
     parser.add_argument('--base-path', help='Caminho para o arquivo base (opcional)')
     parser.add_argument('--rot-path', help='Caminho para o arquivo de rotatividade (opcional)')
     parser.add_argument('--risk-path', help='Caminho para o arquivo de riscos (opcional)')
+    parser.add_argument('--workers', type=int, default=multiprocessing.cpu_count(), help='Número de workers para processamento paralelo')
+    parser.add_argument('--batch-size', type=int, default=200, help='Tamanho do lote para processamento')
     args = parser.parse_args()
     
     # Define nome do arquivo com data
@@ -155,14 +183,43 @@ def main():
     )
     records = base.to_dict('records')
     
-    # Process contracts
+    # Definir número de workers e tamanho do lote
+    num_workers = args.workers
+    batch_size = args.batch_size
+    
+    # Dividir os registros em lotes
+    batches = list(chunk_list(records, batch_size))
+    
+    # Process contracts usando concurrent.futures
     results = []
     with Progress(SpinnerColumn(), BarColumn(), TextColumn("{task.percentage:>3.0f}%"),
-                  TimeElapsedColumn(), TimeRemainingColumn()) as prog:
-        task = prog.add_task("Calculando pricing...", total=len(records))
-        for row in records:
-            results.append(process_row(row, rot_df, cnae_col, riscos_df))
-            prog.update(task, advance=1)
+                 TimeElapsedColumn(), TimeRemainingColumn()) as prog:
+        task = prog.add_task("Calculando pricing...", total=len(batches))
+        
+        # Criar uma função parcial com os parâmetros fixos
+        process_batch_partial = partial(process_batch, rot_df=rot_df, cnae_col=cnae_col, riscos_df=riscos_df)
+        
+        # Garantir que multiprocessing use o método 'spawn' em Windows para evitar problemas
+        if os.name == 'nt':  # Windows
+            ctx = multiprocessing.get_context('spawn')
+            executor = concurrent.futures.ProcessPoolExecutor(max_workers=num_workers, mp_context=ctx)
+        else:
+            executor = concurrent.futures.ProcessPoolExecutor(max_workers=num_workers)
+        
+        # Processar os lotes em paralelo com ProcessPoolExecutor para utilizar múltiplos CPUs
+        with executor:
+            # Submeter os lotes para processamento
+            future_to_batch = {executor.submit(process_batch_partial, batch): i for i, batch in enumerate(batches)}
+            
+            # Coletar os resultados à medida que são concluídos
+            for future in concurrent.futures.as_completed(future_to_batch):
+                try:
+                    batch_results = future.result()
+                    results.extend(batch_results)
+                except Exception as exc:
+                    print(f"Um lote gerou uma exceção: {exc}")
+                finally:
+                    prog.update(task, advance=1)
 
     # Create and export dataframe
     df = pd.DataFrame(results)
@@ -196,6 +253,4 @@ def main():
     print(f"✅ Relatório gerado em {report_file}")
 
 if __name__ == '__main__':
-    # Importar simulate_pricing aqui para evitar importação circular
-    from src.pricing_model import simulate_pricing
     main() 

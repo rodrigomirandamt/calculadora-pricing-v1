@@ -1,0 +1,44 @@
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+.coverage.*
+
+# Virtual environments
+venv/
+env/
+ENV/
+.env/
+.venv/
+
+# Results output directory (contains generated files)
+resultados/
+*.csv
+*.xlsx
+
+# Data files (unless they should be version-controlled)
+data/
+*.pkl
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
