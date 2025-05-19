@@ -26,8 +26,9 @@ def load_data(base_path=CSV_BASE, rot_path=CSV_ROTATIVIDADE, risk_path=CSV_FECHA
     base = pd.read_csv(base_path, encoding='latin1', dtype=str)
     
     # Processa os dataframes
-    for col in ['grossvalue', 'numberofinstallments', 'tempo_empresa_anos']:
-        base[col] = base[col].astype(float)
+    for col in ['grossvalue', 'numberofinstallments', 'tempo_empresa_anos', 'valor_max_faturamento']:
+        if col in base.columns:
+            base[col] = base[col].astype(float)
     
     cnae_col = [c for c in rot_df.columns if 'cnae_section' in c][0]
     rot_df[cnae_col] = rot_df[cnae_col].astype(str)
@@ -44,7 +45,7 @@ def load_data(base_path=CSV_BASE, rot_path=CSV_ROTATIVIDADE, risk_path=CSV_FECHA
 
 def get_risco_fechamento_annual(row, risco_df):
     """
-    Busca a probabilidade anual de fechamento pelo CNAE, porte e idade da empresa.
+    Busca a probabilidade anual de fechamento pelo CNAE, tempo da empresa e faturamento.
     
     Args:
         row: Linha do DataFrame de contratos
@@ -55,14 +56,16 @@ def get_risco_fechamento_annual(row, risco_df):
     """
     sec = row.get('cnae_section') or 'A'
     emp = float(row['tempo_empresa_anos'])
-    porte = row['porte']
+    faturamento = float(row.get('valor_max_faturamento', 0))
+    
     sel = risco_df[
         (risco_df['cnae_section'] == sec) &
-        (risco_df['porte'] == porte) &
         (risco_df['idade_min'] <= emp) &
-        (risco_df['idade_max'] >= emp)
+        (risco_df['idade_max'] >= emp) &
+        (risco_df['faturamento_min'] <= faturamento) &
+        (risco_df['faturamento_max'] >= faturamento)
     ]
-    return float(sel['risco_anual'].iloc[0]) if not sel.empty else 0.1002
+    return float(sel['prob_ajustada'].iloc[0]) if not sel.empty else 0.1002
 
 def process_row(row, rot_df, cnae_col, riscos_df):
     """
@@ -85,10 +88,12 @@ def process_row(row, rot_df, cnae_col, riscos_df):
     else:
         rot = rot_df.loc[rot_df[cnae_col] == 'A'].iloc[0]
 
+    p_close_annual = get_risco_fechamento_annual(row, riscos_df)
+
     params = {
         'PV': row['grossvalue'],
         'n': row['numberofinstallments'],
-        'p_close_annual': get_risco_fechamento_annual(row, riscos_df),
+        'p_close_annual': p_close_annual,
         'p_rot_m': float(rot['rotatividade_mensal']),
         'delay': int(rot['tempo_desemprego_esperado_meses'])
     }
@@ -98,6 +103,10 @@ def process_row(row, rot_df, cnae_col, riscos_df):
         'contractid': row['contractid'],
         'cnae_section': sec,
         'porte': row.get('porte'),
+        'valor_max_faturamento': row.get('valor_max_faturamento', 0),
+        'tempo_empresa_anos': row.get('tempo_empresa_anos', 0),
+        'cluster_person': row.get('cluster_person', ''),
+        'p_close_annual': p_close_annual,
         'delay': params['delay'],
         'p_rot_m': params['p_rot_m'],
         **sim

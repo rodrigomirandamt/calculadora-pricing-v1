@@ -20,7 +20,7 @@ LGD = 0.80    # 80% perda em default estrutural
 
 # --- Paths dos arquivos --------------------------------------------------
 CSV_ROTATIVIDADE = 'dados/prob-rotatividade.csv'
-CSV_FECHAMENTO = 'dados/risco-fechamento-porte.csv'
-CSV_BASE = 'dados/base-producao-neoway_20250503.csv'
+CSV_FECHAMENTO = 'dados/new-risco-fechamento-porte.csv'
+CSV_BASE = 'dados/base-producao_20250519.csv'
 OUTPUT_DIR = 'resultados'
 OUTPUT_BASE = 'resultado_pricingv1' 

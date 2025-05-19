@@ -190,7 +190,7 @@ def main():
     # Dividir os registros em lotes
     batches = list(chunk_list(records, batch_size))
     
-    # Process contracts usando concurrent.futures
+    # Process contracts using concurrent.futures
     results = []
     with Progress(SpinnerColumn(), BarColumn(), TextColumn("{task.percentage:>3.0f}%"),
                  TimeElapsedColumn(), TimeRemainingColumn()) as prog:
@@ -227,9 +227,10 @@ def main():
     # Order columns as specified
     cols_order = [
         'personid', 'contractid', 'cnae_section', 'porte',
+        'valor_max_faturamento', 'tempo_empresa_anos', 'cluster_person',
         'PV', 'n',
         'CDI_anual', 'Funding', 'Custo_Operacional', 'Margem', 'R_base_anual',
-        'delay', 'p_rot_m',
+        'delay', 'p_rot_m', 'p_close_annual',
         'h_close', 'h_turnover', 'h_default', 'h_delay',
         'S_n', 'P_default_total', 'P_delay_total',
         'EPV_surv', 'EPV_delay', 'EPV_default',
