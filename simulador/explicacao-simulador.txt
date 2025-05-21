@@ -1,0 +1,164 @@
+# Documentação do simulador.py
+
+## Objetivo
+
+O arquivo `simulador.py` implementa um **simulador interativo** para cálculo de pricing de empréstimos consignados privados. Ele permite ao usuário ajustar diversas variáveis e observar o impacto no preço do empréstimo e em métricas de risco. Adicionalmente, apresenta uma série de **gráficos de sensibilidade** que demonstram como o spread anual do empréstimo reage a variações em parâmetros chave, e **curvas de risco ao longo do tempo** para detalhar a dinâmica das probabilidades. Utiliza a biblioteca **Streamlit** para criar uma interface web amigável e visual.
+
+---
+
+## Integração com a Calculadora de Pricing v1
+
+O simulador não implementa a lógica de cálculo de pricing por conta própria. Ao invés disso, ele **reutiliza as bibliotecas validadas da calculadora v1** para garantir consistência nos resultados. Especificamente, os seguintes arquivos da calculadora são importados e utilizados:
+
+- **src/config.py**: Contém parâmetros financeiros e configurações que o simulador modifica dinamicamente com base na interação do usuário na UI.
+- **src/data_utils.py**: Oferece funções para carregar os dados de rotatividade e riscos de fechamento (`load_data`).
+- **src/pricing_model.py**: Contém a implementação matemática do modelo de pricing ajustado ao risco (`simulate_pricing`).
+
+O simulador utiliza `importlib.reload()` para atualizar dinamicamente os módulos quando os parâmetros são alterados pelo usuário, sem modificar os arquivos originais validados. Isso permite que a interface web reflita as alterações imediatamente enquanto mantém a integridade da calculadora v1.
+
+Os arquivos CSV externos utilizados (através de `src/data_utils.py`) incluem:
+- Arquivo de rotatividade por CNAE
+- Arquivo de riscos de fechamento por CNAE, idade e faturamento
+
+---
+
+## Estrutura Geral da Interface
+
+O simulador organiza a informação visualmente da seguinte forma:
+
+1.  **Entrada de Dados (UI)**: Controles para o usuário definir os parâmetros do empréstimo, da empresa e financeiros.
+2.  **Cálculo do Pricing Principal**: Simulação baseada nos parâmetros da UI.
+3.  **Exibição dos Resultados Principais**: Métricas chave (PMTs, taxas, spreads) e gráficos de composição do EPV e probabilidades de evento.
+4.  **Gráficos de Sensibilidade**: Uma série de gráficos que analisam visualmente o impacto de variações em parâmetros individuais sobre o spread anual.
+5.  **Curvas de Risco ao Longo do Tempo**: Gráficos detalhando a evolução da probabilidade de sobrevivência, default e atraso mês a mês, posicionados no final da página após todos os gráficos de sensibilidade.
+
+---
+
+## 1. Entrada de Dados (UI)
+
+A interface é composta por vários controles interativos agrupados:
+
+### a) Características da Empresa
+
+-   **Setor (CNAE):** Dropdown para selecionar o setor da empresa (impacta rotatividade e risco de fechamento).
+-   **Idade da Empresa (anos):** Slider para informar a idade da empresa (impacta risco de fechamento).
+-   **Faturamento Anual (R$):** Campo numérico para o faturamento anual da empresa (impacta risco de fechamento).
+
+### b) Parâmetros Financeiros (Sliders)
+
+Estes parâmetros são usados para calcular a taxa base (`R_BASE`) e definir premissas de perda. Dicas de ajuda (`help`) explicam cada um.
+-   **Taxa de Informalidade (%):** Percentual do risco de turnover que migra para default completo.
+-   **LGD (Loss Given Default) (%):** Perda percentual sobre o saldo devedor em caso de default.
+-   **CDI Anual (%):** Taxa livre de risco de referência.
+-   **Spread de Funding (%):** Adicional sobre o CDI para custo de captação.
+-   **Custo Operacional (%):** Custo anual da operação, como percentual do funding.
+-   **Margem (%):** Margem de lucro desejada, como percentual do funding.
+
+### c) Características do Empréstimo
+
+-   **Valor do Empréstimo (R$):** Valor principal do empréstimo (`PV`).
+-   **Prazo (meses):** Número de parcelas do empréstimo (`n`).
+
+---
+
+## 2. Cálculo do Pricing Principal
+
+Após a entrada dos dados pelo usuário:
+
+1.  **Busca de Parâmetros de Risco Específicos**:
+    *   Para o **CNAE selecionado**: obtém `p_rot_m` (probabilidade de rotatividade mensal) e `delay` (tempo de desemprego esperado em meses) do arquivo de rotatividade.
+    *   Para o **CNAE, Idade da Empresa e Faturamento Anual selecionados**: busca `p_close_annual` (probabilidade anual de fechamento da empresa) do arquivo de riscos.
+2.  **Atualização Dinâmica dos Módulos de Configuração e Pricing**:
+    *   O módulo `src.config` é recarregado (`importlib.reload`) e seus atributos (CDI_ANUAL, FUNDING, CUSTO_OPERACIONAL, MARGEM, P_INFORMALIDADE, LGD) são atualizados com os valores dos sliders da UI.
+    *   Com base nisso, `R_BASE` (taxa base anual) e `r_tar_m` (taxa-meta mensal) são recalculadas dentro do `config_module`.
+    *   O módulo `src.pricing_model` é recarregado para garantir que ele utilize as configurações atualizadas do `config_module`.
+3.  **Execução da Simulação Principal**:
+    *   A função `simulate_pricing` (de `src.pricing_model`) é chamada com os parâmetros do empréstimo (PV, n) e os parâmetros de risco da empresa (p_close_annual, p_rot_m, delay).
+
+---
+
+## 3. Exibição dos Resultados Principais
+
+Os resultados da simulação principal são apresentados de forma clara, com dicas de ajuda (`help`) para a maioria das métricas, funcionando como um glossário interativo:
+
+### a) Métricas de Risco e Taxa Base
+
+-   **Probabilidade Anual de Fechamento**: Com tooltip explicando que é a probabilidade da empresa encerrar atividades em um ano.
+-   **Prob. Rotatividade Anual**: Com tooltip detalhando que inclui risco de fechamento e turnover individual.
+-   **Taxa Base Anual**: Com tooltip explicando que é a composição de Funding + Custo Operacional + Margem.
+
+### b) Resultados do Pricing
+
+-   **PMT Base**: Com tooltip explicando que é a parcela mensal sem ajuste para riscos.
+-   **PMT Risco**: Com tooltip detalhando que é a parcela ajustada para cobrir riscos esperados.
+-   **Spread Valor**: Com tooltip explicando que é a diferença monetária entre PMT Risco e PMT Base.
+
+### c) Taxas e Spreads Resultantes
+
+-   **Taxa Mínima Mensal**: Com tooltip detalhando que é a TIR mensal efetiva para o cliente.
+-   **Taxa Mínima Anual**: Com tooltip explicando que é a TIR anual efetiva para o cliente.
+-   **Spread Anual**: Com tooltip detalhando que é o prêmio de risco anual (R_min_anual - R_base_anual).
+
+### d) Gráficos da Simulação Principal
+
+-   **Composição do EPV (Valor Presente Esperado dos Fluxos):** Gráfico de pizza (Sobrevivência, Atraso, Default).
+-   **Probabilidades Acumuladas de Evento ao Final do Prazo:** Gráfico de barras (Default Total, Atraso Total, Sobrevivência até o Fim).
+
+### e) Métricas Adicionais
+
+-   **Parcelas Esperadas**: Com tooltip explicando que é o número de parcelas esperadas pagas integralmente.
+-   **Tempo Médio até Evento**: Com tooltip detalhando que é o tempo médio até o primeiro evento de crédito.
+-   **Duração Esperada**: Com tooltip explicando o prazo médio ponderado pelos eventos.
+-   **LGD Ponderado**: Com tooltip detalhando a perda esperada total como percentual do PV.
+-   **Tempo de Cálculo**: Com tooltip explicando que é o tempo de execução da simulação.
+
+---
+
+## 4. Gráficos de Sensibilidade
+
+Esta seção, localizada após os resultados principais, exibe como o **Spread Anual** (calculado como `R_min_anual - R_BASE`) varia em resposta a mudanças em parâmetros chave. Para cada gráfico de sensibilidade:
+-   Um parâmetro é variado ao longo de uma faixa definida.
+-   Todos os outros parâmetros são mantidos fixos, conforme os valores selecionados na interface principal.
+-   O valor do parâmetro atualmente selecionado na UI é destacado no gráfico com um marcador especial (símbolo de diamante com cor diferenciada) para referência visual.
+
+Os seguintes gráficos de sensibilidade são gerados:
+
+1.  **Sensibilidade ao Setor (CNAE)**: Barras horizontais mostrando o spread anual para cada CNAE, com o setor selecionado destacado com um marcador diamante.
+2.  **Sensibilidade à Idade da Empresa**: Linha (0 a 50 anos) com o valor da idade atual destacado com marcador especial.
+3.  **Sensibilidade ao Faturamento Anual**: Linha com eixo X logarítmico (R$ 300k a R$ 1B), destacando o faturamento atual.
+4.  **Sensibilidade à Taxa de Informalidade**: Linha (0% a 100%) com a taxa atual destacada com marcador.
+5.  **Sensibilidade ao LGD (Loss Given Default)**: Linha (0% a 100%) com o valor atual destacado.
+6.  **Sensibilidade à Taxa Base Anual (R_BASE = Funding + Custo Op. + Margem)**: Linha (5% a 50% a.a.) com o valor atual destacado.
+7.  **Sensibilidade ao Número de Parcelas (n)**: Linha (6 a 60 meses) com o número de parcelas atual destacado.
+
+---
+
+## 5. Curvas de Risco ao Longo do Tempo
+
+Localizada explicitamente no final da página, após todos os gráficos de sensibilidade, esta seção fornece uma visão detalhada da dinâmica das probabilidades de risco mês a mês para o cenário principal definido na UI. As seguintes curvas são recalculadas localmente no `simulador.py` (usando `n`, `h_default`, `h_delay` da simulação principal) e plotadas:
+
+-   **Probabilidade de Sobrevivência Acumulada (S\[t\])**: Probabilidade de o contrato estar ativo e sem eventos até o mês `t`.
+-   **Probabilidade de Default no Mês t (f_def\[t\])**: Probabilidade de ocorrer um default *exatamente* no mês `t`.
+-   **Probabilidade de Atraso no Mês t (f_del\[t\])**: Probabilidade de ocorrer um atraso *exatamente* no mês `t`.
+
+Estes gráficos são apresentados como subplots verticalmente alinhados, compartilhando o eixo x (meses), permitindo a visualização direta da relação entre as três curvas de probabilidade.
+
+---
+
+## Observações Técnicas Importantes
+
+-   **Recálculo Local das Curvas de Risco**: As curvas S, f_def, f_del para a seção "Curvas de Risco ao Longo do Tempo" são recalculadas dentro do `simulador.py` para evitar modificações no módulo `src/pricing_model.py` validado.
+-   **Recarregamento de Módulos**: `importlib.reload()` é usado extensivamente para `config_module` e `pricing_model_module` antes das simulações (principal e de sensibilidade). Isso garante que as alterações nos parâmetros da UI ou nos loops de sensibilidade sejam refletidas nos cálculos.
+-   **Consistência da Base de Cálculo para Sensibilidades**: Nos loops de sensibilidade que alteram parâmetros do `config_module` (Informalidade, LGD, R_BASE), é crucial que, antes de cada iteração, os *outros* parâmetros configuráveis da UI sejam restabelecidos no `config_module` para manter uma base de comparação consistente.
+-   **Dados Externos**: Dados de rotatividade e risco de fechamento são carregados de arquivos CSV.
+-   **Tooltips Informativos**: Cada métrica principal conta com tooltips explicativos (via parâmetro `help`) que funcionam como um glossário interativo, facilitando o entendimento dos conceitos pelo usuário.
+-   **Marcadores de Seleção**: Cada gráfico de sensibilidade inclui um marcador especial (diamante em cor diferenciada) que destaca o valor atualmente selecionado na UI, permitindo fácil referência visual.
+
+---
+
+## Fluxo Resumido de Uso
+
+1.  Usuário ajusta os parâmetros na interface (Características da Empresa, Parâmetros Financeiros, Características do Empréstimo).
+2.  O simulador calcula e exibe os resultados do pricing principal instantaneamente, incluindo métricas detalhadas com dicas de ajuda (tooltips).
+3.  Abaixo, são exibidos os gráficos de sensibilidade, cada um mostrando o impacto da variação de um parâmetro específico no spread anual, com o ponto da UI destacado com um marcador especial.
+4.  No final da página, após todos os gráficos de sensibilidade, as curvas de risco ao longo do tempo (S, f_def, f_del) são mostradas para o cenário principal.
