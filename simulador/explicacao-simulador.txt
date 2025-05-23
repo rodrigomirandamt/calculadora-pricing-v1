@@ -30,7 +30,8 @@ O simulador organiza a informação visualmente da seguinte forma:
 2.  **Cálculo do Pricing Principal**: Simulação baseada nos parâmetros da UI.
 3.  **Exibição dos Resultados Principais**: Métricas chave (PMTs, taxas, spreads) e gráficos de composição do EPV e probabilidades de evento.
 4.  **Gráficos de Sensibilidade**: Uma série de gráficos que analisam visualmente o impacto de variações em parâmetros individuais sobre o spread anual.
-5.  **Curvas de Risco ao Longo do Tempo**: Gráficos detalhando a evolução da probabilidade de sobrevivência, default e atraso mês a mês, posicionados no final da página após todos os gráficos de sensibilidade.
+5.  **Gráfico de Tornado**: Análise de sensibilidade multivariada mostrando o impacto relativo de cada variável no spread anual.
+6.  **Curvas de Risco ao Longo do Tempo**: Gráficos detalhando a evolução da probabilidade de risco mês a mês para o cenário principal definido na UI.
 
 ---
 
@@ -130,16 +131,29 @@ Os seguintes gráficos de sensibilidade são gerados:
 5.  **Sensibilidade ao LGD (Loss Given Default)**: Linha (0% a 100%) com o valor atual destacado.
 6.  **Sensibilidade à Taxa Base Anual (R_BASE = Funding + Custo Op. + Margem)**: Linha (5% a 50% a.a.) com o valor atual destacado.
 7.  **Sensibilidade ao Número de Parcelas (n)**: Linha (6 a 60 meses) com o número de parcelas atual destacado.
+8.  **Sensibilidade ao Delay (Tempo de Desemprego)**: Linha (0 a 12 meses) com o valor de delay do CNAE selecionado destacado.
 
 ---
 
-## 5. Curvas de Risco ao Longo do Tempo
+## 5. Gráfico de Tornado (Análise de Sensibilidade Multivariada)
 
-Localizada explicitamente no final da página, após todos os gráficos de sensibilidade, esta seção fornece uma visão detalhada da dinâmica das probabilidades de risco mês a mês para o cenário principal definido na UI. As seguintes curvas são recalculadas localmente no `simulador.py` (usando `n`, `h_default`, `h_delay` da simulação principal) e plotadas:
+Após os gráficos de sensibilidade individuais, o simulador apresenta um **gráfico de tornado** que mostra o impacto relativo de variações em múltiplos parâmetros sobre o spread anual:
 
--   **Probabilidade de Sobrevivência Acumulada (S\[t\])**: Probabilidade de o contrato estar ativo e sem eventos até o mês `t`.
--   **Probabilidade de Default no Mês t (f_def\[t\])**: Probabilidade de ocorrer um default *exatamente* no mês `t`.
--   **Probabilidade de Atraso no Mês t (f_del\[t\])**: Probabilidade de ocorrer um atraso *exatamente* no mês `t`.
+-   **Como funciona:** Para cada variável (R_BASE, LGD, Informalidade, Número de Parcelas, Delay), calcula-se o spread anual variando a variável em ±10% (exceto para Número de Parcelas, que usa ±12 parcelas para maior visibilidade), mantendo todas as demais fixas nos valores da UI.
+-   **Visualização:** Barras horizontais mostram o quanto o spread anual aumenta ou diminui para cada choque. O eixo X é Δ Spread Anual (p.p.).
+-   **Ordem:** As barras são ordenadas do maior para o menor impacto absoluto, facilitando a identificação das variáveis mais sensíveis.
+-   **Rótulos:** Cada barra mostra o valor base e os valores testados (ex: 36 → 24/48).
+-   **Importância:** O topo do gráfico indica a variável de maior impacto relativo no spread.
+
+---
+
+## 6. Curvas de Risco ao Longo do Tempo
+
+Localizada explicitamente no final da página, após todos os gráficos de sensibilidade e o tornado, esta seção fornece uma visão detalhada da dinâmica das probabilidades de risco mês a mês para o cenário principal definido na UI. As seguintes curvas são recalculadas localmente no `simulador.py` (usando `n`, `h_default`, `h_delay` da simulação principal) e plotadas:
+
+-   **Probabilidade de Sobrevivência Acumulada (S[t])**: Probabilidade de o contrato estar ativo e sem eventos até o mês `t`.
+-   **Probabilidade de Default no Mês t (f_def[t])**: Probabilidade de ocorrer um default *exatamente* no mês `t`.
+-   **Probabilidade de Atraso no Mês t (f_del[t])**: Probabilidade de ocorrer um atraso *exatamente* no mês `t`.
 
 Estes gráficos são apresentados como subplots verticalmente alinhados, compartilhando o eixo x (meses), permitindo a visualização direta da relação entre as três curvas de probabilidade.
 
@@ -153,6 +167,7 @@ Estes gráficos são apresentados como subplots verticalmente alinhados, compart
 -   **Dados Externos**: Dados de rotatividade e risco de fechamento são carregados de arquivos CSV.
 -   **Tooltips Informativos**: Cada métrica principal conta com tooltips explicativos (via parâmetro `help`) que funcionam como um glossário interativo, facilitando o entendimento dos conceitos pelo usuário.
 -   **Marcadores de Seleção**: Cada gráfico de sensibilidade inclui um marcador especial (diamante em cor diferenciada) que destaca o valor atualmente selecionado na UI, permitindo fácil referência visual.
+-   **Tornado com Choque Fixo em n**: Para o gráfico de tornado, o choque em "Número de Parcelas" é de ±12 parcelas (mínimo 6, máximo 120), enquanto para as demais variáveis é de ±10%.
 
 ---
 
@@ -161,4 +176,5 @@ Estes gráficos são apresentados como subplots verticalmente alinhados, compart
 1.  Usuário ajusta os parâmetros na interface (Características da Empresa, Parâmetros Financeiros, Características do Empréstimo).
 2.  O simulador calcula e exibe os resultados do pricing principal instantaneamente, incluindo métricas detalhadas com dicas de ajuda (tooltips).
 3.  Abaixo, são exibidos os gráficos de sensibilidade, cada um mostrando o impacto da variação de um parâmetro específico no spread anual, com o ponto da UI destacado com um marcador especial.
-4.  No final da página, após todos os gráficos de sensibilidade, as curvas de risco ao longo do tempo (S, f_def, f_del) são mostradas para o cenário principal.
+4.  Após os gráficos de sensibilidade, o gráfico de tornado mostra o impacto relativo de cada variável no spread anual.
+5.  No final da página, após todos os gráficos de sensibilidade e o tornado, as curvas de risco ao longo do tempo (S, f_def, f_del) são mostradas para o cenário principal.
