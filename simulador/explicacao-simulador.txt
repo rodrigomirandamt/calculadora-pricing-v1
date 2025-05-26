@@ -24,13 +24,13 @@ Os arquivos CSV externos utilizados (através de `src/data_utils.py`) incluem:
 
 ## Estrutura Geral da Interface
 
-O simulador organiza a informação visualmente da seguinte forma:
+O simulador organiza a informação visualmente da seguinte forma, otimizando o uso do espaço horizontal:
 
-1.  **Entrada de Dados (UI)**: Controles para o usuário definir os parâmetros do empréstimo, da empresa e financeiros.
+1.  **Entrada de Dados (UI)**: Controles organizados em três colunas para melhor aproveitamento do espaço - Características da Empresa e do Tomador, Parâmetros Financeiros, e Parâmetros de Risco e do Empréstimo.
 2.  **Cálculo do Pricing Principal**: Simulação baseada nos parâmetros da UI.
-3.  **Exibição dos Resultados Principais**: Métricas chave (PMTs, taxas, spreads) e gráficos de composição do EPV e probabilidades de evento.
-4.  **Gráficos de Sensibilidade**: Uma série de gráficos que analisam visualmente o impacto de variações em parâmetros individuais sobre o spread anual.
-5.  **Gráfico de Tornado**: Análise de sensibilidade multivariada mostrando o impacto relativo de cada variável no spread anual.
+3.  **Exibição dos Resultados Principais**: Métricas chave organizadas em layout de 4 colunas, com gráficos de composição do EPV e probabilidades de evento lado a lado.
+4.  **Gráficos de Sensibilidade**: Gráficos organizados em pares lado a lado para otimizar o espaço - Características da Empresa, Parâmetros de Risco, Parâmetros do Empréstimo, e Características do Tomador.
+5.  **Gráfico de Tornado**: Análise de sensibilidade multivariada compacta mostrando o impacto relativo de cada variável no spread anual.
 6.  **Curvas de Risco ao Longo do Tempo**: Gráficos detalhando a evolução da probabilidade de risco mês a mês para o cenário principal definido na UI.
 
 ---
@@ -39,24 +39,25 @@ O simulador organiza a informação visualmente da seguinte forma:
 
 A interface é composta por vários controles interativos agrupados:
 
-### a) Características da Empresa
+### Layout Otimizado em Três Colunas
 
+#### Coluna 1: Características da Empresa e do Tomador
 -   **Setor (CNAE):** Dropdown para selecionar o setor da empresa (impacta rotatividade e risco de fechamento).
 -   **Idade da Empresa (anos):** Slider para informar a idade da empresa (impacta risco de fechamento).
 -   **Faturamento Anual (R$):** Campo numérico para o faturamento anual da empresa (impacta risco de fechamento).
+-   **Idade (anos):** Idade do tomador do empréstimo (impacta probabilidade de óbito).
+-   **Sexo:** Gênero do tomador (Masculino/Feminino) (impacta probabilidade de óbito).
 
-### b) Parâmetros Financeiros (Sliders)
-
-Estes parâmetros são usados para calcular a taxa base (`R_BASE`) e definir premissas de perda. Dicas de ajuda (`help`) explicam cada um.
--   **Taxa de Informalidade (%):** Percentual do risco de turnover que migra para default completo.
--   **LGD (Loss Given Default) (%):** Perda percentual sobre o saldo devedor em caso de default.
+#### Coluna 2: Parâmetros Financeiros
+Estes parâmetros são usados para calcular a taxa base (`R_BASE`). Dicas de ajuda (`help`) explicam cada um.
 -   **CDI Anual (%):** Taxa livre de risco de referência.
 -   **Spread de Funding (%):** Adicional sobre o CDI para custo de captação.
 -   **Custo Operacional (%):** Custo anual da operação, como percentual do funding.
 -   **Margem (%):** Margem de lucro desejada, como percentual do funding.
 
-### c) Características do Empréstimo
-
+#### Coluna 3: Parâmetros de Risco e do Empréstimo
+-   **Taxa de Informalidade (%):** Percentual do risco de turnover que migra para default completo.
+-   **LGD (Loss Given Default) (%):** Perda percentual sobre o saldo devedor em caso de default.
 -   **Valor do Empréstimo (R$):** Valor principal do empréstimo (`PV`).
 -   **Prazo (meses):** Número de parcelas do empréstimo (`n`).
 
@@ -69,12 +70,13 @@ Após a entrada dos dados pelo usuário:
 1.  **Busca de Parâmetros de Risco Específicos**:
     *   Para o **CNAE selecionado**: obtém `p_rot_m` (probabilidade de rotatividade mensal) e `delay` (tempo de desemprego esperado em meses) do arquivo de rotatividade.
     *   Para o **CNAE, Idade da Empresa e Faturamento Anual selecionados**: busca `p_close_annual` (probabilidade anual de fechamento da empresa) do arquivo de riscos.
+    *   Para a **Idade e Gênero do Tomador selecionados**: busca `p_obito_ann` (probabilidade anual de óbito) do arquivo de mortalidade.
 2.  **Atualização Dinâmica dos Módulos de Configuração e Pricing**:
     *   O módulo `src.config` é recarregado (`importlib.reload`) e seus atributos (CDI_ANUAL, FUNDING, CUSTO_OPERACIONAL, MARGEM, P_INFORMALIDADE, LGD) são atualizados com os valores dos sliders da UI.
     *   Com base nisso, `R_BASE` (taxa base anual) e `r_tar_m` (taxa-meta mensal) são recalculadas dentro do `config_module`.
     *   O módulo `src.pricing_model` é recarregado para garantir que ele utilize as configurações atualizadas do `config_module`.
 3.  **Execução da Simulação Principal**:
-    *   A função `simulate_pricing` (de `src.pricing_model`) é chamada com os parâmetros do empréstimo (PV, n) e os parâmetros de risco da empresa (p_close_annual, p_rot_m, delay).
+    *   A função `simulate_pricing` (de `src.pricing_model`) é chamada com os parâmetros do empréstimo (PV, n), os parâmetros de risco da empresa (p_close_annual, p_rot_m, delay) e os parâmetros de risco do tomador (p_obito_ann).
 
 ---
 
@@ -86,6 +88,7 @@ Os resultados da simulação principal são apresentados de forma clara, com dic
 
 -   **Probabilidade Anual de Fechamento**: Com tooltip explicando que é a probabilidade da empresa encerrar atividades em um ano.
 -   **Prob. Rotatividade Anual**: Com tooltip detalhando que inclui risco de fechamento e turnover individual.
+-   **Prob. Óbito Anual**: Com tooltip explicando que é a probabilidade anual de óbito do tomador baseada na idade e gênero.
 -   **Taxa Base Anual**: Com tooltip explicando que é a composição de Funding + Custo Operacional + Margem.
 
 ### b) Resultados do Pricing
@@ -102,8 +105,8 @@ Os resultados da simulação principal são apresentados de forma clara, com dic
 
 ### d) Gráficos da Simulação Principal
 
--   **Composição do EPV (Valor Presente Esperado dos Fluxos):** Gráfico de pizza (Sobrevivência, Atraso, Default).
--   **Probabilidades Acumuladas de Evento ao Final do Prazo:** Gráfico de barras (Default Total, Atraso Total, Sobrevivência até o Fim).
+-   **Composição do EPV (Valor Presente Esperado dos Fluxos):** Gráfico de pizza (Sobrevivência, Atraso, Default, Óbito).
+-   **Probabilidades Acumuladas de Evento ao Final do Prazo:** Gráfico de barras (Default Total, Atraso Total, Óbito Total, Sobrevivência até o Fim).
 
 ### e) Métricas Adicionais
 
@@ -111,6 +114,7 @@ Os resultados da simulação principal são apresentados de forma clara, com dic
 -   **Tempo Médio até Evento**: Com tooltip detalhando que é o tempo médio até o primeiro evento de crédito.
 -   **Duração Esperada**: Com tooltip explicando o prazo médio ponderado pelos eventos.
 -   **LGD Ponderado**: Com tooltip detalhando a perda esperada total como percentual do PV.
+-   **LGD Ponderado Óbito**: Com tooltip detalhando a perda esperada por óbito como percentual do PV.
 -   **Tempo de Cálculo**: Com tooltip explicando que é o tempo de execução da simulação.
 
 ---
@@ -122,16 +126,29 @@ Esta seção, localizada após os resultados principais, exibe como o **Spread A
 -   Todos os outros parâmetros são mantidos fixos, conforme os valores selecionados na interface principal.
 -   O valor do parâmetro atualmente selecionado na UI é destacado no gráfico com um marcador especial (símbolo de diamante com cor diferenciada) para referência visual.
 
-Os seguintes gráficos de sensibilidade são gerados:
+Os gráficos de sensibilidade são organizados em seções temáticas lado a lado para otimizar o espaço:
 
+### Seção 1: Sensibilidade ao Setor (CNAE)
 1.  **Sensibilidade ao Setor (CNAE)**: Barras horizontais mostrando o spread anual para cada CNAE, com o setor selecionado destacado com um marcador diamante.
+
+### Seção 2: Características da Empresa (lado a lado)
 2.  **Sensibilidade à Idade da Empresa**: Linha (0 a 50 anos) com o valor da idade atual destacado com marcador especial.
 3.  **Sensibilidade ao Faturamento Anual**: Linha com eixo X logarítmico (R$ 300k a R$ 1B), destacando o faturamento atual.
+
+### Seção 3: Parâmetros de Risco (lado a lado)
 4.  **Sensibilidade à Taxa de Informalidade**: Linha (0% a 100%) com a taxa atual destacada com marcador.
 5.  **Sensibilidade ao LGD (Loss Given Default)**: Linha (0% a 100%) com o valor atual destacado.
+
+### Seção 4: Taxa Base Anual
 6.  **Sensibilidade à Taxa Base Anual (R_BASE = Funding + Custo Op. + Margem)**: Linha (5% a 50% a.a.) com o valor atual destacado.
+
+### Seção 5: Parâmetros do Empréstimo (lado a lado)
 7.  **Sensibilidade ao Número de Parcelas (n)**: Linha (6 a 60 meses) com o número de parcelas atual destacado.
 8.  **Sensibilidade ao Delay (Tempo de Desemprego)**: Linha (0 a 12 meses) com o valor de delay do CNAE selecionado destacado.
+
+### Seção 6: Características do Tomador (lado a lado)
+9.  **Sensibilidade à Idade do Tomador**: Linha (21 a 75 anos) com a idade atual destacada.
+10. **Sensibilidade ao Gênero do Tomador**: Barras comparando Masculino vs Feminino com o gênero atual destacado.
 
 ---
 
@@ -139,7 +156,7 @@ Os seguintes gráficos de sensibilidade são gerados:
 
 Após os gráficos de sensibilidade individuais, o simulador apresenta um **gráfico de tornado** que mostra o impacto relativo de variações em múltiplos parâmetros sobre o spread anual:
 
--   **Como funciona:** Para cada variável (R_BASE, LGD, Informalidade, Número de Parcelas, Delay), calcula-se o spread anual variando a variável em ±10% (exceto para Número de Parcelas, que usa ±12 parcelas para maior visibilidade), mantendo todas as demais fixas nos valores da UI.
+-   **Como funciona:** Para cada variável (R_BASE, LGD, Informalidade, Número de Parcelas, Delay, Idade do Tomador), calcula-se o spread anual variando a variável em ±10% (exceto para Número de Parcelas que usa ±12 parcelas e Idade do Tomador que usa ±10 anos para maior visibilidade), mantendo todas as demais fixas nos valores da UI.
 -   **Visualização:** Barras horizontais mostram o quanto o spread anual aumenta ou diminui para cada choque. O eixo X é Δ Spread Anual (p.p.).
 -   **Ordem:** As barras são ordenadas do maior para o menor impacto absoluto, facilitando a identificação das variáveis mais sensíveis.
 -   **Rótulos:** Cada barra mostra o valor base e os valores testados (ex: 36 → 24/48).
@@ -149,32 +166,33 @@ Após os gráficos de sensibilidade individuais, o simulador apresenta um **grá
 
 ## 6. Curvas de Risco ao Longo do Tempo
 
-Localizada explicitamente no final da página, após todos os gráficos de sensibilidade e o tornado, esta seção fornece uma visão detalhada da dinâmica das probabilidades de risco mês a mês para o cenário principal definido na UI. As seguintes curvas são recalculadas localmente no `simulador.py` (usando `n`, `h_default`, `h_delay` da simulação principal) e plotadas:
+Localizada explicitamente no final da página, após todos os gráficos de sensibilidade e o tornado, esta seção fornece uma visão detalhada da dinâmica das probabilidades de risco mês a mês para o cenário principal definido na UI. As seguintes curvas são recalculadas localmente no `simulador.py` (usando `n`, `h_default`, `h_delay`, `h_death` da simulação principal) e plotadas:
 
 -   **Probabilidade de Sobrevivência Acumulada (S[t])**: Probabilidade de o contrato estar ativo e sem eventos até o mês `t`.
 -   **Probabilidade de Default no Mês t (f_def[t])**: Probabilidade de ocorrer um default *exatamente* no mês `t`.
 -   **Probabilidade de Atraso no Mês t (f_del[t])**: Probabilidade de ocorrer um atraso *exatamente* no mês `t`.
+-   **Probabilidade de Óbito no Mês t (f_death[t])**: Probabilidade de ocorrer um óbito *exatamente* no mês `t`.
 
-Estes gráficos são apresentados como subplots verticalmente alinhados, compartilhando o eixo x (meses), permitindo a visualização direta da relação entre as três curvas de probabilidade.
+Estes gráficos são apresentados como subplots verticalmente alinhados, compartilhando o eixo x (meses), permitindo a visualização direta da relação entre as quatro curvas de probabilidade.
 
 ---
 
 ## Observações Técnicas Importantes
 
--   **Recálculo Local das Curvas de Risco**: As curvas S, f_def, f_del para a seção "Curvas de Risco ao Longo do Tempo" são recalculadas dentro do `simulador.py` para evitar modificações no módulo `src/pricing_model.py` validado.
+-   **Recálculo Local das Curvas de Risco**: As curvas S, f_def, f_del, f_death para a seção "Curvas de Risco ao Longo do Tempo" são recalculadas dentro do `simulador.py` para evitar modificações no módulo `src/pricing_model.py` validado.
 -   **Recarregamento de Módulos**: `importlib.reload()` é usado extensivamente para `config_module` e `pricing_model_module` antes das simulações (principal e de sensibilidade). Isso garante que as alterações nos parâmetros da UI ou nos loops de sensibilidade sejam refletidas nos cálculos.
 -   **Consistência da Base de Cálculo para Sensibilidades**: Nos loops de sensibilidade que alteram parâmetros do `config_module` (Informalidade, LGD, R_BASE), é crucial que, antes de cada iteração, os *outros* parâmetros configuráveis da UI sejam restabelecidos no `config_module` para manter uma base de comparação consistente.
 -   **Dados Externos**: Dados de rotatividade e risco de fechamento são carregados de arquivos CSV.
 -   **Tooltips Informativos**: Cada métrica principal conta com tooltips explicativos (via parâmetro `help`) que funcionam como um glossário interativo, facilitando o entendimento dos conceitos pelo usuário.
 -   **Marcadores de Seleção**: Cada gráfico de sensibilidade inclui um marcador especial (diamante em cor diferenciada) que destaca o valor atualmente selecionado na UI, permitindo fácil referência visual.
--   **Tornado com Choque Fixo em n**: Para o gráfico de tornado, o choque em "Número de Parcelas" é de ±12 parcelas (mínimo 6, máximo 120), enquanto para as demais variáveis é de ±10%.
+-   **Tornado com Choques Fixos**: Para o gráfico de tornado, o choque em "Número de Parcelas" é de ±12 parcelas (mínimo 6, máximo 120) e em "Idade do Tomador" é de ±10 anos (mínimo 21, máximo 75), enquanto para as demais variáveis é de ±10%.
 
 ---
 
 ## Fluxo Resumido de Uso
 
-1.  Usuário ajusta os parâmetros na interface (Características da Empresa, Parâmetros Financeiros, Características do Empréstimo).
+1.  Usuário ajusta os parâmetros na interface (Características da Empresa, Parâmetros Financeiros, Características do Tomador, Características do Empréstimo).
 2.  O simulador calcula e exibe os resultados do pricing principal instantaneamente, incluindo métricas detalhadas com dicas de ajuda (tooltips).
 3.  Abaixo, são exibidos os gráficos de sensibilidade, cada um mostrando o impacto da variação de um parâmetro específico no spread anual, com o ponto da UI destacado com um marcador especial.
 4.  Após os gráficos de sensibilidade, o gráfico de tornado mostra o impacto relativo de cada variável no spread anual.
-5.  No final da página, após todos os gráficos de sensibilidade e o tornado, as curvas de risco ao longo do tempo (S, f_def, f_del) são mostradas para o cenário principal.
+5.  No final da página, após todos os gráficos de sensibilidade e o tornado, as curvas de risco ao longo do tempo (S, f_def, f_del, f_death) são mostradas para o cenário principal.
