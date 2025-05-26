@@ -7,7 +7,7 @@ import numpy as np
 from src.config import *
 
 def load_data(base_path=CSV_BASE, rot_path=CSV_ROTATIVIDADE, risk_path=CSV_FECHAMENTO, 
-              num_rows=None, sample_size=None):
+              obito_path=CSV_OBITO, num_rows=None, sample_size=None):
     """
     Carrega e prepara os arquivos de dados de entrada
     
@@ -15,6 +15,7 @@ def load_data(base_path=CSV_BASE, rot_path=CSV_ROTATIVIDADE, risk_path=CSV_FECHA
         base_path: Caminho para o arquivo da base de contratos
         rot_path: Caminho para o arquivo de rotatividade
         risk_path: Caminho para o arquivo de riscos de fechamento
+        obito_path: Caminho para o arquivo de probabilidades de óbito
         num_rows: Limite de linhas a carregar (opcional)
         sample_size: Tamanho da amostra aleatória (opcional)
         
@@ -23,12 +24,25 @@ def load_data(base_path=CSV_BASE, rot_path=CSV_ROTATIVIDADE, risk_path=CSV_FECHA
     """
     rot_df = pd.read_csv(rot_path, encoding='utf-8-sig')
     riscos_df = pd.read_csv(risk_path, encoding='latin1')
+    obito_df = pd.read_csv(obito_path, encoding='utf-8-sig')
     base = pd.read_csv(base_path, encoding='latin1', dtype=str)
     
     # Processa os dataframes
     for col in ['grossvalue', 'numberofinstallments', 'tempo_empresa_anos', 'valor_max_faturamento']:
         if col in base.columns:
             base[col] = base[col].astype(float)
+    
+    # Converte idade_anos para int truncando (não arredondando) para fazer o merge corretamente
+    if 'idade_anos' in base.columns:
+        base['idade_anos'] = np.floor(base['idade_anos'].astype(float)).astype(int)
+    
+    # Garante que idade_anos na tabela de óbito também seja int
+    obito_df['idade_anos'] = obito_df['idade_anos'].astype(int)
+    
+    # Merge com dados de mortalidade
+    base = base.merge(obito_df, on=['gender', 'idade_anos'], how='left')
+    # Preenche valores faltantes com 0 (assumindo baixo risco para idades não cobertas)
+    base['prob_anual_obito'] = base['prob_anual_obito'].fillna(0.0)
     
     cnae_col = [c for c in rot_df.columns if 'cnae_section' in c][0]
     rot_df[cnae_col] = rot_df[cnae_col].astype(str)
@@ -95,7 +109,8 @@ def process_row(row, rot_df, cnae_col, riscos_df):
         'n': row['numberofinstallments'],
         'p_close_annual': p_close_annual,
         'p_rot_m': float(rot['rotatividade_mensal']),
-        'delay': int(rot['tempo_desemprego_esperado_meses'])
+        'delay': int(rot['tempo_desemprego_esperado_meses']),
+        'p_obito_ann': float(row.get('prob_anual_obito', 0.0))
     }
     sim = simulate_pricing(params)
     return {
@@ -106,8 +121,11 @@ def process_row(row, rot_df, cnae_col, riscos_df):
         'valor_max_faturamento': row.get('valor_max_faturamento', 0),
         'tempo_empresa_anos': row.get('tempo_empresa_anos', 0),
         'cluster_person': row.get('cluster_person', ''),
+        'idade': row.get('idade_anos', 0),
+        'sexo': row.get('gender', ''),
         'p_close_annual': p_close_annual,
         'delay': params['delay'],
         'p_rot_m': params['p_rot_m'],
+        'p_obito_ann': params['p_obito_ann'],
         **sim
     } 

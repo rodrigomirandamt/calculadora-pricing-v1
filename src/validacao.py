@@ -26,11 +26,12 @@ def validate_results(filepath):
     tol_total = 1e-6    # para soma EPV = PV
 
     # 3) Calcula métricas auxiliares
-    df['sum_probs']        = df['S_n'] + df['P_default_total'] + df['P_delay_total']
+    df['sum_probs']        = df['S_n'] + df['P_default_total'] + df['P_delay_total'] + df['P_death_total']
     df['epv_surv_ratio']   = df['EPV_surv']  / df['PV']
     df['epv_delay_ratio']  = df['EPV_delay'] / df['PV']
     df['epv_def_ratio']    = df['EPV_default']/ df['PV']
-    df['epv_total']        = df['EPV_surv'] + df['EPV_delay'] + df['EPV_default']
+    df['epv_death_ratio']  = df['EPV_death'] / df['PV']
+    df['epv_total']        = df['EPV_surv'] + df['EPV_delay'] + df['EPV_default'] + df['EPV_death']
     df['duration_check']   = df['E_Duration'] >= df['Mean_time_to_event']
 
     # 4) Flags de erro
@@ -38,6 +39,7 @@ def validate_results(filepath):
     df['flag_epv_surv']    = (df['epv_surv_ratio'] - df['S_n']).abs() > tol_epv
     df['flag_epv_delay']   = (df['epv_delay_ratio'] - df['P_delay_total']).abs() > tol_epv
     df['flag_epv_def']     = (df['epv_def_ratio']   - df['P_default_total']).abs() > tol_epv
+    df['flag_epv_death']   = (df['epv_death_ratio'] - df['P_death_total']).abs() > tol_epv
     df['flag_epv_total']   = (df['epv_total'] - df['PV']).abs() > tol_total
     df['flag_pmt']         = df['PMT_risco'] <= df['PMT_base']
     df['flag_duration']    = ~df['duration_check']
@@ -45,12 +47,14 @@ def validate_results(filepath):
         (df['S_n'].between(0,1)) &
         (df['P_default_total'].between(0,1)) &
         (df['P_delay_total'].between(0,1)) &
-        (df['LGD_ponderado'].between(0,1))
+        (df['P_death_total'].between(0,1)) &
+        (df['LGD_ponderado'].between(0,1)) &
+        (df['LGD_ponderado_death'].between(0,1))
     )
 
     # 5) Resumo de flags
     checks = [
-        'flag_sum_probs','flag_epv_surv','flag_epv_delay','flag_epv_def',
+        'flag_sum_probs','flag_epv_surv','flag_epv_delay','flag_epv_def','flag_epv_death',
         'flag_epv_total','flag_pmt','flag_duration','flag_intervals'
     ]
 

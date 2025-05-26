@@ -33,7 +33,7 @@ from src.validacao import validate_results
 # Importar simulate_pricing aqui para evitar problemas de pickling com ProcessPoolExecutor
 from src.pricing_model import simulate_pricing
 
-def generate_report(output_csv_path, args, base_path, rot_path, risk_path):
+def generate_report(output_csv_path, args, base_path, rot_path, risk_path, obito_path):
     """
     Gera um relatório com metadados e validação dos resultados
     
@@ -43,6 +43,7 @@ def generate_report(output_csv_path, args, base_path, rot_path, risk_path):
         base_path: Caminho efetivamente usado para o arquivo base
         rot_path: Caminho efetivamente usado para o arquivo de rotatividade
         risk_path: Caminho efetivamente usado para o arquivo de riscos
+        obito_path: Caminho efetivamente usado para o arquivo de óbito
         
     Returns:
         str: Caminho do arquivo de relatório gerado
@@ -65,14 +66,16 @@ def generate_report(output_csv_path, args, base_path, rot_path, risk_path):
         'MARGEM': MARGEM,
         'R_BASE': R_BASE,
         'P_INFORMALIDADE': P_INFORMALIDADE,
-        'LGD': LGD
+        'LGD': LGD,
+        'LGD_DEATH': LGD_DEATH
     }
     
     # Arquivos utilizados
     files_used = {
         'BASE': base_path,
         'ROTATIVIDADE': rot_path,
-        'FECHAMENTO': risk_path
+        'FECHAMENTO': risk_path,
+        'OBITO': obito_path
     }
     
     # Gera o conteúdo do relatório
@@ -157,6 +160,7 @@ def main():
     parser.add_argument('--base-path', help='Caminho para o arquivo base (opcional)')
     parser.add_argument('--rot-path', help='Caminho para o arquivo de rotatividade (opcional)')
     parser.add_argument('--risk-path', help='Caminho para o arquivo de riscos (opcional)')
+    parser.add_argument('--obito-path', help='Caminho para o arquivo de óbito (opcional)')
     parser.add_argument('--workers', type=int, default=multiprocessing.cpu_count(), help='Número de workers para processamento paralelo')
     parser.add_argument('--batch-size', type=int, default=200, help='Tamanho do lote para processamento')
     args = parser.parse_args()
@@ -172,12 +176,14 @@ def main():
     base_path = args.base_path or CSV_BASE
     rot_path = args.rot_path or CSV_ROTATIVIDADE
     risk_path = args.risk_path or CSV_FECHAMENTO
+    obito_path = getattr(args, 'obito_path', None) or CSV_OBITO
 
     # Load data
     base, rot_df, riscos_df, cnae_col = load_data(
         base_path=base_path,
         rot_path=rot_path,
         risk_path=risk_path,
+        obito_path=obito_path,
         num_rows=args.num, 
         sample_size=args.sample
     )
@@ -228,13 +234,14 @@ def main():
     cols_order = [
         'personid', 'contractid', 'cnae_section', 'porte',
         'valor_max_faturamento', 'tempo_empresa_anos', 'cluster_person',
+        'idade', 'sexo',
         'PV', 'n',
         'CDI_anual', 'Funding', 'Custo_Operacional', 'Margem', 'R_base_anual',
-        'delay', 'p_rot_m', 'p_close_annual',
-        'h_close', 'h_turnover', 'h_default', 'h_delay',
-        'S_n', 'P_default_total', 'P_delay_total',
-        'EPV_surv', 'EPV_delay', 'EPV_default',
-        'Expected_payments', 'Mean_time_to_event', 'E_Duration', 'LGD_ponderado',
+        'delay', 'p_rot_m', 'p_close_annual', 'p_obito_ann',
+        'h_close', 'h_turnover', 'h_default', 'h_delay', 'h_death',
+        'S_n', 'P_default_total', 'P_delay_total', 'P_death_total',
+        'EPV_surv', 'EPV_delay', 'EPV_default', 'EPV_death',
+        'Expected_payments', 'Mean_time_to_event', 'E_Duration', 'LGD_ponderado', 'LGD_ponderado_death',
         'PMT_base', 'PMT_risco', 'spread_valor',
         'r_tar_m', 'r_min_m', 'spread',
         'R_min_anual', 'spread_anual', 'calc_time_s'
@@ -250,7 +257,7 @@ def main():
     print(f"✅ Resultados salvos em {output_file}")
     
     # Gerar relatório de acompanhamento
-    report_file = generate_report(output_file, args, base_path, rot_path, risk_path)
+    report_file = generate_report(output_file, args, base_path, rot_path, risk_path, obito_path)
     print(f"✅ Relatório gerado em {report_file}")
 
 if __name__ == '__main__':

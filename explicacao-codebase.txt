@@ -3,13 +3,14 @@
 1. Objetivo Geral
 -----------------
 Determinar a parcela mensal ajustada ao risco (PMT_risco) de empréstimos consignados privados,
-levando em consideração riscos de fechamento da empresa empregadora e rotatividade (demissão do tomador).
+levando em consideração riscos de fechamento da empresa empregadora, rotatividade (demissão do tomador) e óbito.
 
 Dado:
 - PV: valor presente do empréstimo
 - n: número total de parcelas mensais
 - p_close_ann: probabilidade anual de fechamento
 - p_rot_m: probabilidade mensal de rotatividade do setor
+- p_obito_ann: probabilidade anual de óbito (por idade e gênero)
 - d: tempo de atraso esperado após rotatividade (em meses)
 
 O código gera métricas adicionais para análise detalhada de risco e precificação.
@@ -50,12 +51,14 @@ Etapas principais do fluxo:
    h_turnover = h_close + (1 - h_close) * (p_rot_m * 0.66)
    h_default = h_turnover * 10%
    h_delay = h_turnover * 90%
+   h_death = 1 - (1 - p_obito_ann)^(1/12)
 
 3. Curva de sobrevivência e densidades
    S[0] = 1
-   S[u] = S[u-1] * (1 - h_default - h_delay)
+   S[u] = S[u-1] * (1 - h_default - h_delay - h_death)
    f_default[u] = S[u-1] * h_default
    f_delay[u] = S[u-1] * h_delay
+   f_death[u] = S[u-1] * h_death
 
 4. PMT livre de risco (PMT_base):
    PMT_base = PV * r_tar_m / (1 - (1 + r_tar_m)^(-n))
@@ -66,7 +69,7 @@ Etapas principais do fluxo:
 
 Queremos encontrar o valor da parcela mensal PMT_risco tal que o valor presente esperado dos fluxos futuros (EPV_total) iguale o valor do empréstimo:
 
-    EPV_total = EPV_surv + EPV_delay + EPV_default = PV
+    EPV_total = EPV_surv + EPV_delay + EPV_default + EPV_death = PV
 
 Onde cada componente é calculado da seguinte forma:
 
@@ -99,11 +102,22 @@ Onde cada componente é calculado da seguinte forma:
       - LGD é a perda dada o default (ex: 80%)
       - B[u-1] é o saldo devedor imediatamente antes do default
 
-5.4. Resolução numérica:
+5.4. EPV em caso de óbito (evento ocorre no mês u <= n):
+
+    EPV_death = sum_{u=1}^{n} f_death[u] * [
+                    sum_{t=1}^{u-1} [ PMT / (1 + r)^t ] +
+                    (1 - LGD_DEATH) * B[u-1] / (1 + r)^u
+                ]
+
+    Onde:
+      - LGD_DEATH é a perda dada o óbito (ex: 60%)
+      - B[u-1] é o saldo devedor imediatamente antes do óbito
+
+5.5. Resolução numérica:
 
 A equação:
 
-    EPV_surv + EPV_delay + EPV_default = PV
+    EPV_surv + EPV_delay + EPV_default + EPV_death = PV
 
 é resolvida numericamente com fsolve, ajustando PMT até que a igualdade se satisfaça.
 
@@ -148,10 +162,10 @@ Os resultados incluem:
 • personid, contractid, cnae_section, porte
 • PV, n
 • CDI_anual, Funding, Custo_Operacional, Margem, R_base_anual
-• h_close, h_turnover, h_default, h_delay
-• S_n, P_default_total, P_delay_total
-• EPV_surv, EPV_delay, EPV_default
-• Expected_payments, Mean_time_to_event, E_Duration, LGD_ponderado
+• h_close, h_turnover, h_default, h_delay, h_death
+• S_n, P_default_total, P_delay_total, P_death_total
+• EPV_surv, EPV_delay, EPV_default, EPV_death
+• Expected_payments, Mean_time_to_event, E_Duration, LGD_ponderado, LGD_ponderado_death
 • PMT_base, PMT_risco, spread_valor
 • r_tar_m, r_min_m, spread, R_min_anual, spread_anual
 • calc_time_s

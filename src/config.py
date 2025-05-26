@@ -17,10 +17,12 @@ r_tar_m = (1 + R_BASE)**(1/12) - 1  # taxa-meta mensal
 # --- Configurações de risco ----------------------------------------------
 P_INFORMALIDADE = 0.10    # 10% migração para informalidade
 LGD = 0.80    # 80% perda em default estrutural
+LGD_DEATH = 0.60    # 60% perda em caso de óbito
 
 # --- Paths dos arquivos --------------------------------------------------
 CSV_ROTATIVIDADE = 'dados/prob-rotatividade.csv'
 CSV_FECHAMENTO = 'dados/new-risco-fechamento-porte.csv'
-CSV_BASE = 'dados/base-producao_20250519.csv'
+CSV_BASE = 'dados/base-producao_20250526.csv'
+CSV_OBITO = 'dados/prob-anual-obito.csv'
 OUTPUT_DIR = 'resultados'
-OUTPUT_BASE = 'resultado_pricingv1' 
+OUTPUT_BASE = 'resultado_pricingv1'
